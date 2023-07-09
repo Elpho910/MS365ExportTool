@@ -1,22 +1,25 @@
 # Tool created for speeding up the process of tidying up user exports from MS365
 
+# Imports
 import pandas as pd
 from tkinter import *
 from tkinter import messagebox
 from tkinter import filedialog
 
+# Initial declaration of global variables.
 file = None
 df = None
 to_remove = None
 
 
-
+# File dialog popup to select the input file.
 def open_file():
     global file
     file = filedialog.askopenfilename()
     print(file)
 
 
+# Read input CSV file and create list of columns to be removed.
 def tidy_csv():
     global df, to_remove, file
     df = pd.read_csv(file)
@@ -29,6 +32,7 @@ def tidy_csv():
     write_csv()
 
 
+# Remove the columns selected above along with removing guests if selected, then write the new CSV.
 def write_csv():
     global df, to_remove, df_new, var1
     df.drop(columns=to_remove, inplace=True)
@@ -41,6 +45,7 @@ def write_csv():
     messagebox.showinfo(title="Success", message="File tidied successfully!")
 
 
+# GUI
 window = Tk()
 var1 = IntVar()
 window.title("MS365 Tidy Uperer")
