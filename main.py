@@ -14,7 +14,7 @@ to_remove = []
 checkbox_vars = []
 checkboxes = []
 checkbox_count = 0
-removal_options = ["Block credential", "City", "Country/Region", "Department", "DirSyncEnabled", "Fax", "Last dirsync time",
+removal_options = ["Guests", "Block credential", "City", "Country/Region", "Department", "DirSyncEnabled", "Fax", "Last dirsync time",
                 "Last password change time stamp", "License assignment details", "Mobile Phone", "Oath token meta data",
                 "Object Id", "Office", "Password never expires", "Phone number", "Postal code", "Preferred data location",
                 "Preferred language", "Proxy addresses", "Release track", "Soft deletion time stamp", "State",
@@ -45,12 +45,12 @@ def tidy_csv():
 
 # Remove the columns selected above along with removing guests if selected, then write the new CSV.
 def write_csv():
-    global df, to_remove, df_new, var1
+    global df, to_remove, checkbox_vars
     df.drop(columns=to_remove, inplace=True)
-#    if var1.get() == 1:
-#        df = df[df["User principal name"].str.contains("#EXT#") == False]
-#    else:
-#        df = df
+    if checkbox_vars[0].get() == 1:
+        df = df[df["User principal name"].str.contains("#EXT#") == False]
+    else:
+        df = df
     new_file = filedialog.asksaveasfile()
     df.to_csv(new_file, index=False)
     messagebox.showinfo(title="Success", message="File tidied successfully!")
