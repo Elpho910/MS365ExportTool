@@ -40,7 +40,7 @@ def write_csv():
         df = df[df["User principal name"].str.contains("#EXT#") == False]
     else:
         df = df
-    new_file = filedialog.asksaveasfile()
+    new_file = filedialog.asksaveasfile(defaultextension=".csv")
     df.to_csv(new_file, index=False)
     messagebox.showinfo(title="Success", message="File tidied successfully!")
 
