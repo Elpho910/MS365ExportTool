@@ -44,7 +44,10 @@ class CSVEditor:
         for column in self.df.columns:
             self.checkbox_vars.append(IntVar(value=1))
             self.checkboxes.append(Checkbutton(text=f"Remove {column}?", variable=self.checkbox_vars[self.checkbox_count], onvalue=1, offvalue=0))
-            self.checkbox_vars[self.checkbox_count].set(1)
+            if column == "User principal name" or column == "Licenses" or column == "Last name" or column == "First name" or column == "Display name":
+                self.checkbox_vars[self.checkbox_count].set(0)
+            else:
+                self.checkbox_vars[self.checkbox_count].set(1)
             if self.checkbox_count % 2 == 0:
                 self.checkboxes[self.checkbox_count].grid(row=self.checkbox_count+1, column=0, sticky=W)
             else:
