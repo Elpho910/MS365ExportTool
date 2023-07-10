@@ -6,58 +6,70 @@ from tkinter import *
 from tkinter import messagebox
 from tkinter import filedialog
 
-# Initial declaration of global variables.
-file = None
-df = None
-to_remove = None
 
+class CSVEditor:
+    def __init__(self, window):
+        self.window = window
+        self.var1 = IntVar()
+        window.title("MS365 Tidy Uperer")
+        window.config(padx=20, pady=20)
 
-# File dialog popup to select the input file.
-def open_file():
-    global file
-    file = filedialog.askopenfilename()
-    print(file)
+        self.file_button = Button(text="Select CSV File", command=self.open_file)
+        self.file_button.grid(column=0, row=0, padx=10, pady=10)
 
+        self.guest_checkbox = Checkbutton(text="Remove Guests?", variable=self.var1, onvalue=1, offvalue=0)
+        self.guest_checkbox.grid(column=2, row=0, padx=10, pady=10)
 
-# Read input CSV file and create list of columns to be removed.
-def tidy_csv():
-    global df, to_remove, file
-    df = pd.read_csv(file)
+        self.convert_button = Button(text="Tidy CSV", command=self.write_csv)
+        self.convert_button.grid(column=1, row=0, padx=10, pady=10)
 
-    to_remove = ["Block credential", "City", "Country/Region", "Department", "DirSyncEnabled", "Fax", "Last dirsync time",
-                 "Last password change time stamp", "License assignment details", "Mobile Phone", "Oath token meta data",
-                 "Object Id", "Office", "Password never expires", "Phone number", "Postal code", "Preferred data location",
-                 "Preferred language", "Proxy addresses", "Release track", "Soft deletion time stamp", "State",
-                 "Street address", "Strong password required", "Title", "Usage location", "When created"]
-    write_csv()
+        self.checkboxes = []
+        self.checkbox_count = 0
+        self.checkbox_vars = []
+        self.df = None
 
+    # File dialog popup to select the input file.
+    def open_file(self):
+        file = filedialog.askopenfilename(filetypes=[('CSV Files', '*.csv')])
+        self.df = pd.read_csv(file)
 
-# Remove the columns selected above along with removing guests if selected, then write the new CSV.
-def write_csv():
-    global df, to_remove, df_new, var1
-    df.drop(columns=to_remove, inplace=True)
-    if var1.get() == 1:
-        df = df[df["User principal name"].str.contains("#EXT#") == False]
-    else:
-        df = df
-    new_file = filedialog.asksaveasfile(defaultextension=".csv")
-    df.to_csv(new_file, index=False)
-    messagebox.showinfo(title="Success", message="File tidied successfully!")
+        # Clear old checkboxes
+        for checkbox in self.checkboxes:
+            checkbox.destroy()
+        self.checkboxes.clear()
+        self.checkbox_vars.clear()
+        self.checkbox_count = 0
+
+        # Add new checkboxes
+        for column in self.df.columns:
+            self.checkbox_vars.append(IntVar(value=1))
+            self.checkboxes.append(Checkbutton(text=f"Remove {column}?", variable=self.checkbox_vars[self.checkbox_count], onvalue=1, offvalue=0))
+            self.checkbox_vars[self.checkbox_count].set(1)
+            if self.checkbox_count % 2 == 0:
+                self.checkboxes[self.checkbox_count].grid(row=self.checkbox_count+1, column=0, sticky=W)
+            else:
+                self.checkboxes[self.checkbox_count].grid(row=self.checkbox_count, column=1, sticky=W)
+
+            self.checkbox_count += 1
+
+    # Remove the columns selected above along with removing guests if selected, then write the new CSV.
+    def write_csv(self):
+        if self.df is None:
+            messagebox.showerror("No File", "You forgot to load a CSV file!")
+
+        to_remove = [column for column, var in zip(self.df.columns, self.checkbox_vars) if var.get() == 1]
+
+        self.df.drop(columns=to_remove, inplace=True)
+        if self.var1.get() == 1:
+            self.df = self.df[self.df["User principal name"].str.contains("#EXT#") == False]
+        else:
+            self.df = self.df
+        new_file = filedialog.asksaveasfile(defaultextension=".csv")
+        self.df.to_csv(new_file, index=False)
+        messagebox.showinfo(title="Success", message="File tidied successfully!")
 
 
 # GUI
 window = Tk()
-var1 = IntVar()
-window.title("MS365 Tidy Uperer")
-window.config(padx=20, pady=20)
-
-file_button = Button(text="Select CSV File", command=open_file)
-file_button.grid(column=0, row=0, padx=10, pady=10)
-
-guest_checkbox = Checkbutton(text="Remove Guests?", variable=var1, onvalue=1, offvalue=0)
-guest_checkbox.grid(column=0, row=1, padx=10, pady=10)
-
-convert_button = Button(text="Tidy CSV", command=tidy_csv)
-convert_button.grid(column=0, row=2, padx=10, pady=10)
-
+editor = CSVEditor(window)
 window.mainloop()
